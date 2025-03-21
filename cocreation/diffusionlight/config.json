@@ -1,0 +1,33 @@
+{
+    "model_option": "sdxl",
+    "use_controlnet": true,
+    "offload": false,
+    "use_torch_compile": true,
+    "ball_size": 256,
+    "ball_dilate": 20, 
+    "ev_values": [0, -1, -2, -3, -4, -5],
+    "max_negative_ev": -5,
+    "lora_params": {
+        "use_lora": true,
+        "model_path": "./models/ThisIsTheFinal-lora-hdr-continuous-largeT@900/0_-5/checkpoint-2500",
+        "scale": 0.75
+    },
+    "prompt_config": {
+        "prompt": "a perfect mirrored reflective chrome ball sphere",
+        "prompt_dark": "a perfect black dark mirrored reflective chrome ball sphere"
+    
+    },
+    "inpainting_args":{
+        "resize_height": 1024,
+        "resize_width": 1024,
+        "negative_prompt": "matte, diffuse, flat, dull",
+        "denoising_step": 30,
+        "strength": 1.0,
+        "control_scale": 0.5,
+        "guidance_scale": 5.0
+    },
+    "envmap_gen_consts": {
+        "height": 256,
+        "scale": 4
+    }
+}
