@@ -6,19 +6,19 @@ import os
 from tqdm.auto import tqdm
 from transformers import pipeline as transformers_pipeline
 
-from diffusionlight.relighting.pipeline import CustomStableDiffusionControlNetInpaintPipeline
-from diffusionlight.relighting.pipeline_inpaintonly import CustomStableDiffusionInpaintPipeline, CustomStableDiffusionXLInpaintPipeline
-from diffusionlight.relighting.argument import SAMPLERS, VAE_MODELS, DEPTH_ESTIMATOR, get_control_signal_type
-from diffusionlight.relighting.image_processor import (
+from src.diffusionlight.relighting.pipeline import CustomStableDiffusionControlNetInpaintPipeline
+from src.diffusionlight.relighting.pipeline_inpaintonly import CustomStableDiffusionInpaintPipeline, CustomStableDiffusionXLInpaintPipeline
+from src.diffusionlight.relighting.argument import SAMPLERS, VAE_MODELS, DEPTH_ESTIMATOR, get_control_signal_type
+from src.diffusionlight.relighting.image_processor import (
     estimate_scene_depth,
     estimate_scene_normal,
     merge_normal_map,
     fill_depth_circular
 )
-from diffusionlight.relighting.ball_processor import get_ideal_normal_ball, crop_ball
+from src.diffusionlight.relighting.ball_processor import get_ideal_normal_ball, crop_ball
 import pickle
 
-from diffusionlight.relighting.pipeline_xl import CustomStableDiffusionXLControlNetInpaintPipeline
+from src.diffusionlight.relighting.pipeline_xl import CustomStableDiffusionXLControlNetInpaintPipeline
 
 class NoWaterMark:
     def apply_watermark(self, *args, **kwargs):

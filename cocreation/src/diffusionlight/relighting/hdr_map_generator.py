@@ -6,7 +6,7 @@ import numpy as np
 from skimage.util import img_as_float
 import ezexr
 
-from diffusionlight.relighting.tonemapper import TonemapHDR
+from src.diffusionlight.relighting.tonemapper import TonemapHDR
 
 
 class HDREnvMapGenerator:
