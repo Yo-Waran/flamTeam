@@ -9,7 +9,7 @@ from src.blender_cubemap_mod import HDRIExposureMatcher #Import HDRI exposure Ma
 
 
 # Input Paths
-BG_IMG_PATH = "cocreation/assets/bg/bg7.png"
+BG_IMG_PATH = "/root/Ram/Repo/flamTeam/cocreation/assets/bg1.png"
 FG_IMG_PATH = "cocreation/assets/fg1.png"
 #input cubemap paths
 #CUBEMAP_PATH = 'cocreation/assets/cubemaps/cb6.hdr'
@@ -23,8 +23,8 @@ HDRI_DIR = os.path.join(BASE_DIR, "hdri")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
 # Output Paths
-HDRI_OUTPUT_PATH = os.path.join(HDRI_DIR, "extracted_hdri_7.exr")
-RELIT_SUBJECT_PATH = os.path.join(OUTPUT_DIR, "di_relit_subject_7.png")
+HDRI_OUTPUT_PATH = os.path.join(HDRI_DIR, "extracted_hdri_1.exr")
+RELIT_SUBJECT_PATH = os.path.join(OUTPUT_DIR, "di_relit_subject_1.png")
 FINAL_OUTPUT_PATH = os.path.join(OUTPUT_DIR, "final_output.png")
 
 # PBR Maps
@@ -44,6 +44,7 @@ for path in [ MAPS_DIR, HDRI_DIR, OUTPUT_DIR]:
 if not CUBEMAP_PATH:
     print("Step 1: Extracting HDRI...")
     BG_IMG = cv2.imread(BG_IMG_PATH,cv2.IMREAD_UNCHANGED)
+    print("Running Diffusion Light Pipeline...")
     hdr_extractor = DiffusionLightPipeline()
     EXTRACTED_HDRI = hdr_extractor.infer(BG_IMG,HDRI_OUTPUT_PATH)  # Save output HDRI path
 else:
@@ -58,11 +59,11 @@ else:
 ##################################################################
 # Step 2: Relight the foreground image using the extracted HDRI if there is no Cubemap available. If CubeMap exists, then use that for relighting
 ##################################################################
-'''
+
 print("Step 2: Extracting PBR Maps ...")
 pbr_extractor = SwitchLightPipeline()
 pbr_extractor.infer(FG_IMG_PATH,MAPS_DIR)  # Save extracted PBR images
-'''
+
 ##################################################################
 #Step 3:Relight the Subject
 ##################################################################
@@ -75,7 +76,7 @@ else:
     print("Step 3: Relighting Subject using Adjusted CubeMaps...")
     RELIT_SUBJECT = relighter.setup_cubemap_relighting_scene(ALBEDO_PATH,NORMAL_PATH,ROUGHNESS_PATH,ALPHA_PATH,CUBEMAP_PATH, CUBEMAP_ADJUSTED_PATH, RELIT_SUBJECT_PATH)
 
-'''
+
 ##################################################################
 # Step 4: Load images and perform alpha blending
 ##################################################################
@@ -109,5 +110,5 @@ final_composite = overlapper.blend_images(fg_image_resized, bg_image)
 ##################################################################
 cv2.imwrite(FINAL_OUTPUT_PATH, final_composite)
 print(f"Saved Final composited image at {FINAL_OUTPUT_PATH}")
-'''
+
 

@@ -6,12 +6,12 @@ import cv2
 from skimage import transform
 
 
-from cocreation.diffusionlight.relighting.inpainter import BallInpainter
-from cocreation.diffusionlight.relighting.mask_utils import MaskGenerator
-from cocreation.diffusionlight.relighting.hdr_map_generator import HDREnvMapGenerator
-from cocreation.diffusionlight.relighting.ball_processor import get_ideal_normal_ball
-from cocreation.diffusionlight.relighting.argument import SD_MODELS, CONTROLNET_MODELS
-from cocreation.diffusionlight.relighting.utils import *
+from src.diffusionlight.relighting.inpainter import BallInpainter
+from src.diffusionlight.relighting.mask_utils import MaskGenerator
+from src.diffusionlight.relighting.hdr_map_generator import HDREnvMapGenerator
+from src.diffusionlight.relighting.ball_processor import get_ideal_normal_ball
+from src.diffusionlight.relighting.argument import SD_MODELS, CONTROLNET_MODELS
+from src.diffusionlight.relighting.utils import *
 from types import SimpleNamespace
 
 def dict_to_namespace(d):
@@ -34,7 +34,7 @@ class DiffusionLightPipeline:
     and processing of images to generate environment maps.
     """
 
-    MODEL_CONFIG_PATH = "./cocreation/diffusionlight/config.json"
+    MODEL_CONFIG_PATH = "/root/Ram/Repo/flamTeam/cocreation/src/diffusionlight/config.json"
     MODEL_PATH = './models'
 
     def __init__(self):
