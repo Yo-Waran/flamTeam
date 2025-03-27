@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
 import os
-from diffusion_light_hdri_mod import DiffusionLightPipeline  # Import HDRI extraction module
-from switch_light_pipeline_mod import SwitchLightPipeline  # Import Relighting module
-from image_blending_mod import ImageBlending  # Import Alpha Blending module
-from blender_relight_mod import BlenderRelight #Import Relighting Module
-from blender_cubemap_mod import HDRIExposureMatcher #Import HDRI exposure Matcher module
+from src.diffusion_light_hdri_mod import DiffusionLightPipeline  # Import HDRI extraction module
+from src.switch_light_pipeline_mod import SwitchLightPipeline  # Import Relighting module
+from src.image_blending_mod import ImageBlending  # Import Alpha Blending module
+from src.blender_relight_mod import BlenderRelight #Import Relighting Module
+from src.blender_cubemap_mod import HDRIExposureMatcher #Import HDRI exposure Matcher module
 
 
 # Input Paths

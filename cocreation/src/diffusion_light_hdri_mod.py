@@ -6,12 +6,12 @@ import cv2
 from skimage import transform
 
 
-from diffusionlight.relighting.inpainter import BallInpainter
-from diffusionlight.relighting.mask_utils import MaskGenerator
-from diffusionlight.relighting.hdr_map_generator import HDREnvMapGenerator
-from diffusionlight.relighting.ball_processor import get_ideal_normal_ball
-from diffusionlight.relighting.argument import SD_MODELS, CONTROLNET_MODELS
-from diffusionlight.relighting.utils import *
+from cocreation.diffusionlight.relighting.inpainter import BallInpainter
+from cocreation.diffusionlight.relighting.mask_utils import MaskGenerator
+from cocreation.diffusionlight.relighting.hdr_map_generator import HDREnvMapGenerator
+from cocreation.diffusionlight.relighting.ball_processor import get_ideal_normal_ball
+from cocreation.diffusionlight.relighting.argument import SD_MODELS, CONTROLNET_MODELS
+from cocreation.diffusionlight.relighting.utils import *
 from types import SimpleNamespace
 
 def dict_to_namespace(d):
