@@ -4,111 +4,135 @@ import os
 from src.diffusion_light_hdri_mod import DiffusionLightPipeline  # Import HDRI extraction module
 from src.switch_light_pipeline_mod import SwitchLightPipeline  # Import Relighting module
 from src.image_blending_mod import ImageBlending  # Import Alpha Blending module
-from src.blender_relight_mod import BlenderRelight #Import Relighting Module
-from src.blender_cubemap_mod import HDRIExposureMatcher #Import HDRI exposure Matcher module
+from src.blender_relight_mod import BlenderRelight  # Import Relighting Module
+from src.blender_cubemap_mod import HDRIExposureMatcher  # Import HDRI exposure Matcher module
 
-
-# Input Paths
-BG_IMG_PATH = "/root/Ram/Repo/flamTeam/cocreation/assets/bg1.png"
-FG_IMG_PATH = "cocreation/assets/fg1.png"
-#input cubemap paths
-#CUBEMAP_PATH = 'cocreation/assets/cubemaps/cb6.hdr'
-CUBEMAP_PATH = None
-CUBEMAP_ADJUSTED_PATH = "cocreation/assets/cubemaps/cb7_adjusted.hdr"
-
-# Define base directory
-BASE_DIR = os.path.dirname(os.path.abspath(__file__)) #get parent directory of the current file
-MAPS_DIR = os.path.join(BASE_DIR, "maps")
-HDRI_DIR = os.path.join(BASE_DIR, "hdri")
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-
-# Output Paths
-HDRI_OUTPUT_PATH = os.path.join(HDRI_DIR, "extracted_hdri_1.exr")
-RELIT_SUBJECT_PATH = os.path.join(OUTPUT_DIR, "di_relit_subject_1.png")
-FINAL_OUTPUT_PATH = os.path.join(OUTPUT_DIR, "final_output.png")
-
-# PBR Maps
-ALBEDO_PATH = os.path.join(MAPS_DIR, "albedo.png")
-NORMAL_PATH = os.path.join(MAPS_DIR, "normal.png")
-ROUGHNESS_PATH = os.path.join(MAPS_DIR, "roughness.png")
-ALPHA_PATH = os.path.join(MAPS_DIR, "alpha.png")
+class ImageProcessor2D:
+    """
+    A class to process 2D images including HDRI extraction, relighting, and alpha blending.
+    """
     
-# Ensure all required directories exist
-for path in [ MAPS_DIR, HDRI_DIR, OUTPUT_DIR]:
-    os.makedirs(path, exist_ok=True)
+    def __init__(self, bg_img_path, fg_img_path, cubemap_path=None):
+        """
+        Initialize ImageProcessor2D with input and output paths.
+        
+        Args:
+            bg_img_path (str): Path to the background image.
+            fg_img_path (str): Path to the foreground image.
+            cubemap_path (str, optional): Path to the CubeMap HDRI. Defaults to None.
+            output_dir (str, optional): Directory to save output images. Defaults to "output".
+        """
+        self.bg_img_path = bg_img_path
+        self.fg_img_path = fg_img_path
+        self.cubemap_path = cubemap_path
+        
+        # Define directories
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.maps_dir = os.path.join(self.base_dir, "maps")
+        self.hdri_dir = os.path.join(self.base_dir, "hdri")
+        self.output_dir = os.path.join(self.base_dir, "output")
+        os.makedirs(self.output_dir, exist_ok=True)
+        os.makedirs(self.maps_dir, exist_ok=True)
+        os.makedirs(self.hdri_dir, exist_ok=True)
+        os.makedirs(self.output_dir,exist_ok= True)
+        # Output paths
+        self.hdri_output_path = os.path.join(self.hdri_dir, "extracted_hdri.exr")
+        self.relit_subject_path = os.path.join(self.output_dir, "relit_subject.png")
+        self.final_output_path = os.path.join(self.output_dir, "final_output.png")
+        
+        # PBR Maps paths
+        self.albedo_path = os.path.join(self.maps_dir, "albedo.png")
+        self.normal_path = os.path.join(self.maps_dir, "normal.png")
+        self.roughness_path = os.path.join(self.maps_dir, "roughness.png")
+        self.alpha_path = os.path.join(self.maps_dir, "alpha.png")
+    
+    def extract_hdri(self):
+        """
+        Extracts HDRI from the background image using DiffusionLightPipeline().
+        If a CubeMap is available, it adjusts the exposure using HDRIExposureMatcher().
 
-##################################################################
-# Step 1: Extract HDRI from the background image if there is no CubeMap available  . If CubeMap exists , then use that
-##################################################################
+        Raises:
+            ValueError: If the background image cannot be loaded.
+        """
+        if not self.cubemap_path:
+            print("Extracting HDRI...")
+            bg_img = cv2.imread(self.bg_img_path, cv2.IMREAD_UNCHANGED)
+            if bg_img is None:
+                raise ValueError("Failed to load background image")
+            hdr_extractor = DiffusionLightPipeline()
+            hdr_extractor.infer(bg_img, self.hdri_output_path)
+        else:
+            print("Using existing CubeMap...")
+            hdri_exposure_matcher = HDRIExposureMatcher()
+            adjustment_factor, analysis_data = hdri_exposure_matcher.analyze_images(self.bg_img_path, self.cubemap_path)
+            adjusted_hdri = hdri_exposure_matcher.apply_hdri_exposure_adjustment(analysis_data['hdri'], adjustment_factor)
+            hdri_exposure_matcher.save_hdri(adjusted_hdri, self.cubemap_path)
+    
+    def extract_pbr_maps(self):
+        """
+        Extracts PBR maps from the foreground image using SwitchLightPipeline().
+        """
+        print("Extracting PBR Maps...")
+        pbr_extractor = SwitchLightPipeline()
+        pbr_extractor.infer(self.fg_img_path, self.maps_dir)
+    
+    def relight_subject(self):
+        """
+        Relights the foreground image using BlenderRelight().
+        If a CubeMap is available, It uses the extracted HDRI or the adjusted CubeMap for relighting().
+        """
+        relighter = BlenderRelight()
+        if not self.cubemap_path:
+            print("Relighting subject using Extracted HDRI...")
+            relighter.setup_relighting_scene(self.albedo_path, self.normal_path, self.roughness_path, self.alpha_path, self.hdri_output_path, self.relit_subject_path)
+        else:
+            print("Relighting subject using Adjusted CubeMap...")
+            relighter.setup_cubemap_relighting_scene(self.albedo_path, self.normal_path, self.roughness_path, self.alpha_path, self.cubemap_path, self.cubemap_path, self.relit_subject_path)
+    
+    def blend_images(self):
+        """
+        Performs alpha blending between the relit foreground and the background image using ImageBlending().
+        
+        Raises:
+            ValueError: If either the foreground or background image cannot be loaded.
+        """
+        print("Blending images...")
+        fg_image = cv2.imread(self.relit_subject_path, cv2.IMREAD_UNCHANGED)
+        bg_image = cv2.imread(self.bg_img_path, cv2.IMREAD_UNCHANGED)
+        
+        if fg_image is None or bg_image is None:
+            raise ValueError("Error loading images. Check file paths!")
+        
+        # Ensure foreground has an alpha channel
+        if fg_image.shape[2] == 3:
+            print("Foreground image lacks an alpha channel, adding one...")
+            alpha_channel = np.ones((fg_image.shape[0], fg_image.shape[1], 1), dtype=np.uint8) * 255
+            fg_image = np.concatenate((fg_image, alpha_channel), axis=-1)
+        
+        # Resize foreground to match background dimensions
+        fg_resized = cv2.resize(fg_image, (bg_image.shape[1], bg_image.shape[0]), interpolation=cv2.INTER_LINEAR)
+        
+        # Blend images
+        overlapper = ImageBlending()
+        final_composite = overlapper.blend_images(fg_resized, bg_image)
+        
+        # Save the final blended image
+        cv2.imwrite(self.final_output_path, final_composite)
+        print(f"Saved Final composited image at {self.final_output_path}")
+    
+    def process(self):
+        """
+        Runs the full image processing pipeline: extracting HDRI, extracting PBR maps, relighting, and blending.
+        """
+        self.extract_hdri()
+        self.extract_pbr_maps()
+        self.relight_subject()
+        self.blend_images()
 
-if not CUBEMAP_PATH:
-    print("Step 1: Extracting HDRI...")
-    BG_IMG = cv2.imread(BG_IMG_PATH,cv2.IMREAD_UNCHANGED)
-    print("Running Diffusion Light Pipeline...")
-    hdr_extractor = DiffusionLightPipeline()
-    EXTRACTED_HDRI = hdr_extractor.infer(BG_IMG,HDRI_OUTPUT_PATH)  # Save output HDRI path
-else:
-    hdri_exposure_matcher = HDRIExposureMatcher() #make an instance of the HDRI exposure Class
-    print("Step 1: Using Existing Cube Map...")
-    adjustment_factor, analysis_data = hdri_exposure_matcher.analyze_images(BG_IMG_PATH, CUBEMAP_PATH) #analyze the bg image and the HDRI
-    adjusted_hdri = hdri_exposure_matcher.apply_hdri_exposure_adjustment(analysis_data['hdri'], adjustment_factor) #apply the HDRI adjustments in a new blender scene
-    print("Adjusting Existing Cube Map according to BG...")
-    hdri_exposure_matcher.save_hdri(adjusted_hdri, CUBEMAP_ADJUSTED_PATH) #apply the adjustments and save the new hdri
-    print(f"Saved adjusted HDRI to {CUBEMAP_ADJUSTED_PATH}")
-
-##################################################################
-# Step 2: Relight the foreground image using the extracted HDRI if there is no Cubemap available. If CubeMap exists, then use that for relighting
-##################################################################
-
-print("Step 2: Extracting PBR Maps ...")
-pbr_extractor = SwitchLightPipeline()
-pbr_extractor.infer(FG_IMG_PATH,MAPS_DIR)  # Save extracted PBR images
-
-##################################################################
-#Step 3:Relight the Subject
-##################################################################
-relighter = BlenderRelight()
-
-if not CUBEMAP_PATH:
-    print("Step 3: Relighting Subject using Extracted HDRI...")
-    RELIT_SUBJECT = relighter.setup_relighting_scene(ALBEDO_PATH,NORMAL_PATH,ROUGHNESS_PATH,ALPHA_PATH,HDRI_OUTPUT_PATH,RELIT_SUBJECT_PATH)
-else:
-    print("Step 3: Relighting Subject using Adjusted CubeMaps...")
-    RELIT_SUBJECT = relighter.setup_cubemap_relighting_scene(ALBEDO_PATH,NORMAL_PATH,ROUGHNESS_PATH,ALPHA_PATH,CUBEMAP_PATH, CUBEMAP_ADJUSTED_PATH, RELIT_SUBJECT_PATH)
-
-
-##################################################################
-# Step 4: Load images and perform alpha blending
-##################################################################
-print("Step 4: Blending Images...")
-fg_image = cv2.imread(RELIT_SUBJECT, cv2.IMREAD_UNCHANGED)  # Load relit image (RGBA)
-bg_image = cv2.imread(BG_IMG_PATH, cv2.IMREAD_UNCHANGED)  # Load background image (RGB)
-
-if fg_image is None or bg_image is None:
-    raise ValueError("Error loading images. Check file paths!")
-
-# Ensure background image has an alpha channel (if missing, add one)
-if fg_image.shape[2] == 3:  # If foreground doesn't have an alpha channel
-    print("Foreground image lacks an alpha channel, adding one...")
-    alpha_channel = np.ones((fg_image.shape[0], fg_image.shape[1], 1), dtype=np.uint8) * 255
-    fg_image = np.concatenate((fg_image, alpha_channel), axis=-1)
-
-# Blend images
-overlapper = ImageBlending()
-
-# Load background image to get its dimensions
-bg_height, bg_width = bg_image.shape[:2]
-
-# Resize foreground image to match background
-fg_image_resized = cv2.resize(fg_image, (bg_width, bg_height), interpolation=cv2.INTER_LINEAR)
-
-# Blend images
-final_composite = overlapper.blend_images(fg_image_resized, bg_image)
-
-##################################################################
-# Save the final blended image
-##################################################################
-cv2.imwrite(FINAL_OUTPUT_PATH, final_composite)
-print(f"Saved Final composited image at {FINAL_OUTPUT_PATH}")
-
-
+if __name__ == "__main__":
+    processor = ImageProcessor2D(
+        bg_img_path="/root/Ram/Repo/flamTeam/cocreation/assets/bg3.png", #bg path here
+        fg_img_path="/root/Ram/Repo/flamTeam/cocreation/assets/fg3.png", #fg path here
+        cubemap_path=None #cubemap if any
+    )
+    processor.process()
