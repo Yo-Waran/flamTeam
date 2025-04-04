@@ -68,7 +68,7 @@ if __name__ == "__main__":
     #example usage
     pipeline = SwitchLightPipeline()
     output_dir = pipeline.infer(
-        '/root/Ram/DiffusionLight/cocreation/assets/fg1.png',
-        '/root/Ram/DiffusionLight/cocreation/maps'
+        '/root/Ram/Repo/flamTeam/cocreation/assets/fg1.png',
+        '/root/Ram/Repo/flamTeam/cocreation/maps'
     )
     print("Final Maps directory:", output_dir)

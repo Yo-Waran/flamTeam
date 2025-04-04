@@ -273,10 +273,11 @@ class DiffusionLightPipeline:
 
 #example usage
 def main():
-    hdri_path = "cocreation/hdri/myNewHDRI.exr"
-    input_image = "cocreation/assets/bg1.png"
+    hdri_path = "/root/Ram/Repo/flamTeam/cocreation/hdri/extracted_hdri_2.exr"
+    input_image = "flamTeam/cocreation/assets/bg2.png"
     input_image = cv2.imread(input_image, cv2.IMREAD_UNCHANGED)
     diffusion_light_hdri = DiffusionLightPipeline()
+    
     diffusion_light_hdri.infer(input_image, hdri_path)
 
 if __name__ == "__main__":

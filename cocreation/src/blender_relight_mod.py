@@ -87,6 +87,12 @@ class BlenderRelight():
                 return
             img_node = mat.node_tree.nodes.new(type=node_type)
             img_node.image = bpy.data.images.load(image_path)
+            
+            # Set color space based on texture type
+            if target_input == "Base Color":
+                img_node.image.colorspace_settings.name = 'sRGB'
+            else:
+                img_node.image.colorspace_settings.name = 'Non-Color'
 
             if is_alpha:
                 img_node.image.colorspace_settings.name = 'Non-Color'
@@ -178,6 +184,13 @@ class BlenderRelight():
                 return
             img_node = mat.node_tree.nodes.new(type=node_type)
             img_node.image = bpy.data.images.load(image_path)
+
+            # Set color space based on texture type
+            if target_input == "Base Color":
+                img_node.image.colorspace_settings.name = 'sRGB'
+            else:
+                img_node.image.colorspace_settings.name = 'Non-Color'
+
             if is_alpha:
                 img_node.image.colorspace_settings.name = 'Non-Color'
                 mat.blend_method = 'BLEND'
