@@ -1,6 +1,6 @@
+# run this if there is no model available: gdown --id 1seW8qSnaBOQ4_S9bQ4ThVOdeJGYJ-f74 -O src/PIH/pretrained/ckpt_g39.pth
 import sys
 import os
-
 # Add PIH path to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src/PIH")))
 
