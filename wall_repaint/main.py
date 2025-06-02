@@ -1,3 +1,4 @@
+#activate the env first : cd to src/PIH and conda activate pytorch_pih
 # run this if there is no model available: gdown --id 1seW8qSnaBOQ4_S9bQ4ThVOdeJGYJ-f74 -O src/PIH/pretrained/ckpt_g39.pth
 import sys
 import os
